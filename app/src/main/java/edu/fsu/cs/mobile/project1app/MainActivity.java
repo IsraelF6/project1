@@ -1,5 +1,9 @@
 package edu.fsu.cs.mobile.project1app;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,11 +35,16 @@ public class MainActivity extends AppCompatActivity {
 
     FragmentTransaction trans;
 
+    SensorManager sensorManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupFragments(getResources().getConfiguration());
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        setupRegisterListner();
 
     }
 
@@ -131,6 +140,19 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public void setupRegisterListner() {
+        sensorManager.registerListener(new SensorEventListener() {
+             @Override
+             public void onSensorChanged(SensorEvent event) {
+                 float steps = event.values[0];
+                 //update number of steps
+             }
+             @Override
+             public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+             }
+        }, sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER),
+                SensorManager.SENSOR_DELAY_UI);
+    }
 
 }

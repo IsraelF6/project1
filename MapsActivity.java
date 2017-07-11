@@ -5,16 +5,24 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.os.CountDownTimer;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
+import java.util.concurrent.TimeUnit;
+
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
     private GoogleMap mMap;
     LocationManager locationManager;
+    //90 second timer:
+    long timer = 90000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +36,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+
+        //Reference: https://stackoverflow.com/questions/17430477/
+        // is-it-possible-to-add-a-timer-to-the-actionbar-on-android
+        //setContentView(R.layout.activity_maps);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+
+        final MenuItem distance = menu.findItem(R.id.distance);
+        distance.setTitle("Distance: X");
+
+        final MenuItem  steps = menu.findItem(R.id.steps);
+        steps.setTitle("Steps: X");
+
+        final MenuItem  counter = menu.findItem(R.id.counter);
+        new CountDownTimer(timer, 1000) {
+
+            public void onTick(long millisUntilFinished) {
+                long millis = millisUntilFinished;
+                String  hms =  (TimeUnit.MILLISECONDS.toHours(millis))+":"+
+                        (TimeUnit.MILLISECONDS.toMinutes(millis) -
+                                TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)))+":"+
+                        (TimeUnit.MILLISECONDS.toSeconds(millis) -
+                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+
+                counter.setTitle("Time left: " + hms);
+                timer = millis;
+
+            }
+
+            public void onFinish() {
+                counter.setTitle("done!");
+            }
+        }.start();
+
+        return  true;
+
+    }
 
     /**
      * Manipulates the map once available.

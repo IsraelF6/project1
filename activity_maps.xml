@@ -12,36 +12,94 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/Lap_button" />
+        android:layout_alignParentStart="true" />
 
     <Button
         android:id="@+id/Start_Pause_button"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
         android:layout_width="180dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:onClick="onClick_Start"
-        android:text="Start" />
-
-    <Button
-        android:id="@+id/Reset_button"
-        android:layout_width="180dp"
-        android:layout_height="wrap_content"
+        android:layout_height="35dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:fontFamily="sans-serif"
+        android:onClick="onClick_Start"
+        android:text="Start"
+        android:textAllCaps="false"
+        android:textColor="@android:color/holo_orange_dark"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/Reset_button"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="180dp"
+        android:layout_height="35dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/Start_Pause_button"
+        android:fontFamily="sans-serif"
         android:onClick="onClick_Reset"
-        android:text="Reset" />
+        android:textAllCaps="false"
+        android:textColor="@android:color/holo_orange_dark"
+        android:textSize="12sp"
+        android:textStyle="bold" />
 
     <Button
         android:id="@+id/Lap_button"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/Start_Pause_button"
-        android:layout_centerHorizontal="true"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="180dp"
+        android:layout_height="35dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/Reset_button"
+        android:fontFamily="sans-serif"
         android:onClick="onClick_Lap"
-        android:text="Save Lap" />
+        android:textAllCaps="false"
+        android:textColor="@android:color/holo_orange_dark"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/counter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/Lap_button"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
+        android:fontFamily="sans-serif"
+        android:text="TextView"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:textColor="@android:color/holo_orange_dark" />
+
+    <ListView
+        android:id="@+id/listview1"
+        style="@style/Widget.AppCompat.ListView"
+        android:layout_width="180dp"
+        android:layout_height="200dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:background="@android:color/transparent"
+        android:cacheColorHint="@android:color/holo_orange_dark"
+        android:longClickable="false"
+        android:textColor="@android:color/holo_orange_dark" />
+
+    <Button
+        android:id="@+id/Show_button"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:layout_width="180dp"
+        android:layout_height="35dp"
+        android:onClick="onClick_Show"
+        android:text="Hide Laps"
+        android:textAllCaps="false"
+        android:textColor="@android:color/holo_orange_dark"
+        android:textSize="12sp"
+        android:layout_marginBottom="35dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

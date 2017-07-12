@@ -12,11 +12,18 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
@@ -24,12 +31,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     LocationManager locationManager;
     //90 second timer:
     long timer = 90000;
-    Button Start_Pause, Reset;
+    Button Start_Pause, Reset, Lap, Show_Hide;
     long MillisecondTime, StartTime, TimeBuff, UpdateTime = 0L ;
     Handler handler;
-    int Seconds, Minutes, MilliSeconds, start=0;
+    int Seconds, Minutes, MilliSeconds, start=0, show=0;
     Runnable runnable;
     MenuItem  counter, distance, steps;
+    TextView watch;
+    ListView listView ;
+    String[] ListElements = new String[] {  };
+    List<String> ListElementsArrayList ;
+    ArrayAdapter<String> adapter ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +50,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         Start_Pause = (Button) findViewById(R.id.Start_Pause_button);
         Reset = (Button) findViewById(R.id.Reset_button);
+        Lap = (Button) findViewById(R.id.Lap_button);
+        watch = (TextView) findViewById(R.id.counter);
+        Show_Hide = (Button) findViewById(R.id.Show_button);
+        watch.setText("0:00:000");
+        listView = (ListView) findViewById(R.id.listview1);
+
+        ListElementsArrayList = new ArrayList<String>(Arrays.asList(ListElements));
+
+        adapter = new ArrayAdapter<String>(MapsActivity.this,
+                android.R.layout.simple_list_item_1,
+                ListElementsArrayList);
+
+        listView.setAdapter(adapter);
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -62,8 +88,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         steps = menu.findItem(R.id.steps);
         steps.setTitle("Steps: X");
 
-        counter = menu.findItem(R.id.counter);
-        counter.setTitle("00:00:00");
+        //counter = menu.findItem(R.id.counter);
+        //counter.setTitle("00:00:00");
 
         /*new CountDownTimer(timer, 1000) {
 
@@ -101,7 +127,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 MilliSeconds = (int) (UpdateTime % 1000);
 
-                counter.setTitle("" + Minutes + ":"
+               /* counter.setTitle("" + Minutes + ":"
+                        + String.format("%02d", Seconds) + ":"
+                        + String.format("%03d", MilliSeconds));*/
+
+                watch.setText("" + Minutes + ":"
                         + String.format("%02d", Seconds) + ":"
                         + String.format("%03d", MilliSeconds));
 
@@ -113,6 +143,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    public void onClick_Show(View v){
+        switch(show){
+            case 0:
+                Show_Hide.setText("Hide Laps");
+                listView.setVisibility(View.VISIBLE);
+                show = 1;
+                break;
+            case 1:
+                Show_Hide.setText("Show Laps");
+                listView.setVisibility(View.INVISIBLE);
+                show = 0;
+                break;
+        }
+    }
+
     public void onClick_Start(View v){
         switch(start) {
             case 0:
@@ -120,6 +165,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 StartTime = SystemClock.uptimeMillis();
                 handler.postDelayed(runnable, 0);
                 Reset.setEnabled(false);
+                Reset.setText("");
+                Lap.setEnabled(false);
+                Lap.setText("");
                 start = 1;
                 break;
             case 1:
@@ -127,6 +175,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 TimeBuff += MillisecondTime;
                 handler.removeCallbacks(runnable);
                 Reset.setEnabled(true);
+                Reset.setText("Reset");
+                Lap.setEnabled(true);
+                Lap.setText("Save Lap");
                 start = 0;
                 break;
         }
@@ -141,7 +192,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Minutes = 0 ;
         MilliSeconds = 0 ;
 
-        counter.setTitle("00:00:00");
+        //counter.setTitle("00:00:00");
+        watch.setText("0:00:000");
+        ListElementsArrayList.clear();
+        adapter.notifyDataSetChanged();
+    }
+
+    public void onClick_Lap(View v){
+        ListElementsArrayList.add(watch.getText().toString());
+        adapter.notifyDataSetChanged();
     }
 
     /**

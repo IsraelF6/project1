@@ -5,17 +5,18 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-
-import java.util.concurrent.TimeUnit;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
@@ -23,12 +24,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     LocationManager locationManager;
     //90 second timer:
     long timer = 90000;
+    Button Start_Pause, Reset;
+    long MillisecondTime, StartTime, TimeBuff, UpdateTime = 0L ;
+    Handler handler;
+    int Seconds, Minutes, MilliSeconds, start=0;
+    Runnable runnable;
+    MenuItem  counter, distance, steps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        Start_Pause = (Button) findViewById(R.id.Start_Pause_button);
+        Reset = (Button) findViewById(R.id.Reset_button);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -42,18 +51,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //Reference: https://stackoverflow.com/questions/17430477/
         // is-it-possible-to-add-a-timer-to-the-actionbar-on-android
-        //setContentView(R.layout.activity_maps);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
 
-        final MenuItem distance = menu.findItem(R.id.distance);
+        handler = new Handler() ;
+
+        distance = menu.findItem(R.id.distance);
         distance.setTitle("Distance: X");
 
-        final MenuItem  steps = menu.findItem(R.id.steps);
+        steps = menu.findItem(R.id.steps);
         steps.setTitle("Steps: X");
 
-        final MenuItem  counter = menu.findItem(R.id.counter);
-        new CountDownTimer(timer, 1000) {
+        counter = menu.findItem(R.id.counter);
+        counter.setTitle("00:00:00");
+
+        /*new CountDownTimer(timer, 1000) {
 
             public void onTick(long millisUntilFinished) {
                 long millis = millisUntilFinished;
@@ -71,10 +83,65 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onFinish() {
                 counter.setTitle("done!");
             }
-        }.start();
+        }.start();*/
 
+        runnable = new Runnable() {
+
+            public void run() {
+
+                MillisecondTime = SystemClock.uptimeMillis() - StartTime;
+
+                UpdateTime = TimeBuff + MillisecondTime;
+
+                Seconds = (int) (UpdateTime / 1000);
+
+                Minutes = Seconds / 60;
+
+                Seconds = Seconds % 60;
+
+                MilliSeconds = (int) (UpdateTime % 1000);
+
+                counter.setTitle("" + Minutes + ":"
+                        + String.format("%02d", Seconds) + ":"
+                        + String.format("%03d", MilliSeconds));
+
+                handler.postDelayed(this, 0);
+            }
+
+        };
         return  true;
 
+    }
+
+    public void onClick_Start(View v){
+        switch(start) {
+            case 0:
+                Start_Pause.setText("Pause");
+                StartTime = SystemClock.uptimeMillis();
+                handler.postDelayed(runnable, 0);
+                Reset.setEnabled(false);
+                start = 1;
+                break;
+            case 1:
+                Start_Pause.setText("Start");
+                TimeBuff += MillisecondTime;
+                handler.removeCallbacks(runnable);
+                Reset.setEnabled(true);
+                start = 0;
+                break;
+        }
+    }
+
+    public void onClick_Reset(View v){
+        MillisecondTime = 0L ;
+        StartTime = 0L ;
+        TimeBuff = 0L ;
+        UpdateTime = 0L ;
+        Seconds = 0 ;
+        Minutes = 0 ;
+        MilliSeconds = 0 ;
+
+        counter.setTitle("00:00:00");
     }
 
     /**

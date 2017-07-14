@@ -293,6 +293,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         Location mLocation = locationManager.getLastKnownLocation(provider);
 
+        if (mLocation == null) {
+            locationManager.requestLocationUpdates(provider, 1000, 0, this);
+        }
+
         double latitude = mLocation.getLatitude();
         double longitude = mLocation.getLongitude();
 

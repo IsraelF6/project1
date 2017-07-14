@@ -2,6 +2,11 @@ package edu.fsu.cs.mobile.project1app;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -33,6 +38,11 @@ import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
+    SensorManager sensorManager;
+
+    private static String STEPS_STR = "Steps: ";
+    float numSteps = 0;
+
     private GoogleMap mMap;
     LocationManager locationManager;
     //90 second timer:
@@ -59,6 +69,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        setupRegisterListner();
+
         Start_Pause = (Button) findViewById(R.id.Start_Pause_button);
         Reset = (Button) findViewById(R.id.Reset_button);
         Lap = (Button) findViewById(R.id.Lap_button);
@@ -81,6 +95,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        Criteria criteria = new Criteria();
+
 
         // I was not able to get the default map zoom controls (using mMap.getUiSettings().setZoomContolsEnabled(true);)
         // but found on StackOverflow (https://stackoverflow.com/questions/920741/always-show-zoom-controls-on-a-mapview)
@@ -112,13 +129,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
 
-        handler = new Handler() ;
+        handler = new Handler();
 
         distance = menu.findItem(R.id.distance);
         distance.setTitle("Distance: X");
 
         steps = menu.findItem(R.id.steps);
-        steps.setTitle("Steps: X");
+        steps.setTitle(STEPS_STR);
 
         //counter = menu.findItem(R.id.counter);
         //counter.setTitle("00:00:00");
@@ -289,5 +306,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onProviderDisabled(String provider) {
 
+    }
+
+    public void setupRegisterListner() {
+        sensorManager.registerListener(new SensorEventListener() {
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            numSteps = event.values[0];
+            //update number of steps
+            steps.setTitle(STEPS_STR + (int) numSteps);
+        }
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+        }
+     }, sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER),
+                SensorManager.SENSOR_DELAY_UI);
     }
 }

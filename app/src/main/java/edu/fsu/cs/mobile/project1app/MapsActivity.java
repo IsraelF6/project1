@@ -34,6 +34,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
+import android.graphics.Color;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +45,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     SensorManager sensorManager;
 
+    private LatLng oldLatLng, newLatLng;
     private static String STEPS_STR = "Steps: ";
     float numSteps = 0;
 
@@ -127,7 +130,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
 
         // I was not able to get the default map zoom controls (using mMap.getUiSettings().setZoomContolsEnabled(true);)
         // but found on StackOverflow (https://stackoverflow.com/questions/920741/always-show-zoom-controls-on-a-mapview)
@@ -338,10 +340,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             locationManager.requestLocationUpdates(provider, 1000, 0, this);
         }
 
+
         double latitude = mLocation.getLatitude();
         double longitude = mLocation.getLongitude();
-
         LatLng latLng = new LatLng(latitude, longitude);
+
+        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        oldLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
@@ -350,6 +358,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLocationChanged(Location location) {
+        newLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+        PolylineOptions line = new PolylineOptions()
+                .add(oldLatLng, newLatLng)
+                .width(5).color(Color.RED);
+        mMap.addPolyline(line);
+        oldLatLng = newLatLng;
 
     }
 

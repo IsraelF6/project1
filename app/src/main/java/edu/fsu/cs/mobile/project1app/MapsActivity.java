@@ -16,7 +16,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.ZoomControls;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -42,6 +44,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     String[] ListElements = new String[] {  };
     List<String> ListElementsArrayList ;
     ArrayAdapter<String> adapter ;
+
+    ZoomControls zoomControls;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +73,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        // I was not able to get the default map zoom controls (using mMap.getUiSettings().setZoomContolsEnabled(true);)
+        // but found on StackOverflow (https://stackoverflow.com/questions/920741/always-show-zoom-controls-on-a-mapview)
+        // that you can make your own so that's what I did here and it seems to work
+        zoomControls = (ZoomControls) findViewById(R.id.map_zoom_controls);
+        zoomControls.setOnZoomInClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMap.moveCamera(CameraUpdateFactory.zoomIn());
+            }
+        });
+        zoomControls.setOnZoomOutClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMap.moveCamera(CameraUpdateFactory.zoomOut());
+            }
+        });
     }
 
     @Override
@@ -215,6 +236,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+
+        // Enables touch gestures so that they can control the map
+        // Useful to enable pinch and zoom in/out as well as one handed zoom in feature
+        mMap.getUiSettings().setZoomGesturesEnabled(true);
 
         // Add a marker in Sydney and move the camera
         //LatLng sydney = new LatLng(-34, 151);

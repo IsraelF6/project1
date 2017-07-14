@@ -54,6 +54,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     int Seconds, Minutes, MilliSeconds, start=0, show=0;
     Runnable runnable;
     MenuItem  counter, distance, steps;
+    private Menu menu;
     TextView watch;
     ListView listView ;
     String[] ListElements = new String[] {  };
@@ -71,8 +72,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
+        menu = (Menu) findViewById(R.menu.menu);
+
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        setupRegisterListner();
 
         Start_Pause = (Button) findViewById(R.id.Start_Pause_button);
         Reset = (Button) findViewById(R.id.Reset_button);
@@ -113,8 +115,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-
-
     }
 
     @Override
@@ -132,7 +132,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         distance.setTitle("Distance: X");
 
         steps = menu.findItem(R.id.steps);
-        steps.setTitle(STEPS_STR);
+        steps.setTitle(STEPS_STR + (int) numSteps);
+
+        this.menu = menu;
+
+        setupRegisterListner();
 
         //counter = menu.findItem(R.id.counter);
         //counter.setTitle("00:00:00");
@@ -323,15 +327,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         sensorManager.registerListener(new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            numSteps = event.values[0];
+            //numSteps = event.values[0];
+            numSteps++;
             //update number of steps
+            if (menu == null) {
+                return;
+            }
+            steps = menu.findItem(R.id.steps);
             steps.setTitle(STEPS_STR + (int) numSteps);
         }
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
         }
-     }, sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER),
+     }, sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),
                 SensorManager.SENSOR_DELAY_UI);
     }
 }

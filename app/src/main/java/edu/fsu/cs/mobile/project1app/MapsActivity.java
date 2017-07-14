@@ -1,12 +1,15 @@
 package edu.fsu.cs.mobile.project1app;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ZoomControls;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -47,6 +51,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     ZoomControls zoomControls;
 
+    private boolean mLocationPermissionGranted = false;
+    public static int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +66,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Show_Hide = (Button) findViewById(R.id.Show_button);
         watch.setText("0:00:000");
         listView = (ListView) findViewById(R.id.listview1);
+
 
         ListElementsArrayList = new ArrayList<String>(Arrays.asList(ListElements));
 
@@ -90,6 +98,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mMap.moveCamera(CameraUpdateFactory.zoomOut());
             }
         });
+
+
+
     }
 
     @Override
@@ -241,11 +252,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Useful to enable pinch and zoom in/out as well as one handed zoom in feature
         mMap.getUiSettings().setZoomGesturesEnabled(true);
 
+
         // Add a marker in Sydney and move the camera
         //LatLng sydney = new LatLng(-34, 151);
         //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        // Check to see if proper permissions are in place to get current location, if they are,
+        // enable setMyLocation
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            return;
+        }
+        mMap.setMyLocationEnabled(true);
+
+
     }
+
 
     @Override
     public void onLocationChanged(Location location) {

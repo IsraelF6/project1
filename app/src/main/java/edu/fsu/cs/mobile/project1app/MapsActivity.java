@@ -14,12 +14,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -51,15 +53,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Button Start_Pause, Reset, Lap, Show_Hide;
     long MillisecondTime, StartTime, TimeBuff, UpdateTime = 0L ;
     Handler handler;
-    int Seconds, Minutes, MilliSeconds, start=0, show=0;
+    int Seconds, Minutes, MilliSeconds, start=0, show=1;
     Runnable runnable;
     MenuItem  counter, distance, steps;
     private Menu menu;
     TextView watch;
-    ListView listView ;
+    ListView listView, mDrawerList;
+    DrawerLayout mDrawerLayout;
     String[] ListElements = new String[] {  };
-    List<String> ListElementsArrayList ;
-    ArrayAdapter<String> adapter ;
+    String[] DrawerList = new String[] {"Current Run", "Past Runs", "Settings"};
+
+    List<String> ListElementsArrayList;
+    List<String> DrawerArrayList;
+    ArrayAdapter<String> adapter, drawer_adapter ;
+    ActionBarDrawerToggle mDrawerToggle;
+
 
     ZoomControls zoomControls;
 
@@ -72,27 +80,50 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
 
-        menu = (Menu) findViewById(R.menu.menu);
-
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
+        // Stop Watch Variables
         Start_Pause = (Button) findViewById(R.id.Start_Pause_button);
         Reset = (Button) findViewById(R.id.Reset_button);
         Lap = (Button) findViewById(R.id.Lap_button);
         watch = (TextView) findViewById(R.id.counter);
         Show_Hide = (Button) findViewById(R.id.Show_button);
         watch.setText("0:00:000");
+
+        // Lap listView
         listView = (ListView) findViewById(R.id.listview1);
-
-
         ListElementsArrayList = new ArrayList<String>(Arrays.asList(ListElements));
-
         adapter = new ArrayAdapter<String>(MapsActivity.this,
                 android.R.layout.simple_list_item_1,
                 ListElementsArrayList);
-
         listView.setAdapter(adapter);
 
+        // Drawer Variables
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        DrawerArrayList = new ArrayList<String>(Arrays.asList(DrawerList));
+        drawer_adapter = new ArrayAdapter<String>(MapsActivity.this, android.R.layout.simple_list_item_1, DrawerArrayList);
+        mDrawerList.setAdapter(drawer_adapter);
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+                R.string.drawer_open, R.string.drawer_close) {
+
+            /** Called when a drawer has settled in a completely closed state. */
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+
+            /** Called when a drawer has settled in a completely open state. */
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+        };
+
+        // Set the drawer toggle as the DrawerListener
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -117,6 +148,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    /* Called whenever we call invalidateOptionsMenu() */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // If the nav drawer is open, hide action items related to the content view
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        steps.setVisible(!drawerOpen);
+        distance.setVisible(!drawerOpen);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -136,7 +177,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         this.menu = menu;
 
-        setupRegisterListner();
+        setupRegisterListener();
 
         //counter = menu.findItem(R.id.counter);
         //counter.setTitle("00:00:00");
@@ -327,7 +368,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    public void setupRegisterListner() {
+    public void setupRegisterListener() {
         sensorManager.registerListener(new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
@@ -346,5 +387,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
      }, sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),
                 SensorManager.SENSOR_DELAY_UI);
+    }
+
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            selectItem(position);
+        }
+    }
+
+    private void selectItem(int position){
+        switch (position){
+            case 0:
+                Toast.makeText(this, "This is Position 0 in Drawer", Toast.LENGTH_SHORT).show();
+                break;
+            case 1:
+                Toast.makeText(this, "This is Position 1 in Drawer", Toast.LENGTH_SHORT).show();
+                break;
+            case 2:
+                Toast.makeText(this, "This is Position 2 in Drawer", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Toast.makeText(this, "This is the Default in Drawer", Toast.LENGTH_SHORT).show();
+        }
     }
 }

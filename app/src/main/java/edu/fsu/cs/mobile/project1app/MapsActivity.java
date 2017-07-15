@@ -52,7 +52,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng oldLatLng, newLatLng;
     private static String STEPS_STR = "Steps: ";
     private static String DIST_STR = "Distance: ";
-    private static String METERS = "m";
+    private static String METERS = " m";
     float numSteps = 0;
     float distanceNum = 0;
 
@@ -89,7 +89,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         // Stop Watch Variables
@@ -179,7 +178,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         handler = new Handler();
 
         distance = menu.findItem(R.id.distance);
-        distance.setTitle("Distance: X");
+        distance.setTitle(DIST_STR + distanceNum + METERS);
 
         steps = menu.findItem(R.id.steps);
         steps.setTitle(STEPS_STR + (int) numSteps);

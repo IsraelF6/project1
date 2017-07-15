@@ -1,5 +1,6 @@
 package edu.fsu.cs.mobile.project1app;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -10,6 +11,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -17,6 +19,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -293,7 +296,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void onClick_Lap(View v){
         ListElementsArrayList.add(watch.getText().toString());
+
+        ContentValues mNewValues = new ContentValues();
+
+        mNewValues.put(RunProvider.RUN_STEPS, 500);
+        mNewValues.put(RunProvider.RUN_DISTANCE, 1000);
+        mNewValues.put(RunProvider.RUN_MINUTES, Minutes);
+        mNewValues.put(RunProvider.RUN_SECONDS, Seconds);
+        mNewValues.put(RunProvider.RUN_MILISECONDS, MilliSeconds);
+        getContentResolver().insert(RunProvider.CONTENT_URI, mNewValues);
+
+
         adapter.notifyDataSetChanged();
+
+
     }
 
     /**

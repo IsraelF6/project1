@@ -3,4 +3,5 @@
     <string name="title_activity_maps">Map</string>
     <string name="drawer_open">opened</string>
     <string name="drawer_close">closed</string>
+    <string name="authority">edu.fsu.cs.mobile.project1app.provider</string>
 </resources>

@@ -61,6 +61,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name=".RunProvider"
+            android:authorities="@string/authority"
+            android:exported="true"
+            android:readPermission="edu.fsu.cs.mobile.project1app.permission.READ_PERMISSION"
+            android:writePermission="edu.fsu.cs.mobile.project1app.permission.WRITE_PERMISSION"/>
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").

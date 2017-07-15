@@ -40,6 +40,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import android.graphics.Color;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,7 +51,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private LatLng oldLatLng, newLatLng;
     private static String STEPS_STR = "Steps: ";
+    private static String DIST_STR = "Distance: ";
+    private static String METERS = "m";
     float numSteps = 0;
+    float distanceNum = 0;
 
     private GoogleMap mMap;
     LocationManager locationManager;
@@ -376,10 +380,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onLocationChanged(Location location) {
         newLatLng = new LatLng(location.getLatitude(), location.getLongitude());
 
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(newLatLng));
+
+
         PolylineOptions line = new PolylineOptions()
                 .add(oldLatLng, newLatLng)
                 .width(5).color(Color.RED);
         mMap.addPolyline(line);
+
+        Location oldLocation = new Location("old");
+        Location newLocation = new Location("new");
+
+        oldLocation.setLatitude(oldLatLng.latitude);
+        oldLocation.setLongitude(oldLatLng.longitude);
+        newLocation.setLatitude(newLatLng.latitude);
+        newLocation.setLongitude(newLatLng.longitude);
+
+        float newDistanceNum = oldLocation.distanceTo(newLocation);
+        //Toast.makeText(this, Float.toString(distanceNum), Toast.LENGTH_SHORT).show();
+
+        updateDistance(newDistanceNum);
+
         oldLatLng = newLatLng;
 
     }
@@ -441,5 +462,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             default:
                 Toast.makeText(this, "This is the Default in Drawer", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    // calculate new distance traveled (currently in meters) every time location is updated and update display
+    private void updateDistance(float newDistanceNum) {
+        // add existing distance to new distance
+        distanceNum += newDistanceNum;
+
+        // round distance to one decimal place
+        BigDecimal bd = new BigDecimal(Float.toString(distanceNum));
+        bd = bd.setScale(1, BigDecimal.ROUND_HALF_UP);
+
+        distanceNum = bd.floatValue();
+
+        // update text with new distance
+        distance = menu.findItem(R.id.distance);
+        distance.setTitle(DIST_STR + distanceNum + METERS);
     }
 }

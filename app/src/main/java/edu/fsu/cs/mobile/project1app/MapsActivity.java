@@ -2,6 +2,7 @@ package edu.fsu.cs.mobile.project1app;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -18,6 +19,7 @@ import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -53,12 +55,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng oldLatLng, newLatLng;
     private static String STEPS_STR = "Steps: ";
     private static String DIST_STR = "Distance: ";
-    private static String METERS = " m";
+    private static String KM = " km";
+    private static String Miles = " miles";
+    private static float conv = (float) 0.621371;
+    private static boolean metric = true;
     float numSteps = 0;
     float distanceNum = 0;
 
     private GoogleMap mMap;
     LocationManager locationManager;
+    Location mLocation;
     //90 second timer:
     long timer = 90000;
     Button Start_Pause, Reset, Lap, Show_Hide;
@@ -179,7 +185,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         handler = new Handler();
 
         distance = menu.findItem(R.id.distance);
-        distance.setTitle(DIST_STR + distanceNum + METERS);
+        if(metric == true)
+            distance.setTitle(DIST_STR + distanceNum + KM);
+
+        else if(metric == false)
+            distance.setTitle(DIST_STR + distanceNum + Miles);
 
         steps = menu.findItem(R.id.steps);
         steps.setTitle(STEPS_STR + (int) numSteps);
@@ -262,6 +272,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         switch(start) {
             case 0:
                 Start_Pause.setText("Pause");
+                double latitude = mLocation.getLatitude();
+                double longitude = mLocation.getLongitude();
+                LatLng latLng = new LatLng(latitude, longitude);
+                mMap.addMarker(new MarkerOptions().position(latLng).title("Start"));
                 StartTime = SystemClock.uptimeMillis();
                 handler.postDelayed(runnable, 0);
                 Reset.setEnabled(false);
@@ -279,6 +293,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Lap.setEnabled(true);
                 Lap.setText("Save Lap");
                 start = 0;
+
                 break;
         }
     }
@@ -300,8 +315,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         steps.setTitle(STEPS_STR + (int) numSteps);
 
         distance = menu.findItem(R.id.distance);
-        distance.setTitle(DIST_STR + distanceNum + METERS);
+        if(metric == true)
+            distance.setTitle(DIST_STR + distanceNum + KM);
 
+        else if(metric == false)
+            distance.setTitle(DIST_STR + distanceNum + Miles);
 
 
         //counter.setTitle("00:00:00");
@@ -366,7 +384,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         String provider = locationManager.getBestProvider(criteria, true);
 
-        Location mLocation = locationManager.getLastKnownLocation(provider);
+        mLocation = locationManager.getLastKnownLocation(provider);
 
         if (mLocation == null) {
             locationManager.requestLocationUpdates(provider, 1000, 0, this);
@@ -387,7 +405,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
 
         //Added a marker on location at start of app
-        mMap.addMarker(new MarkerOptions().position(latLng).title("Start"));
+       // mMap.addMarker(new MarkerOptions().position(latLng).title("Start"));
     }
 
 
@@ -470,13 +488,42 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void selectItem(int position){
         switch (position){
             case 0:
-                Toast.makeText(this, "This is Position 0 in Drawer", Toast.LENGTH_SHORT).show();
+                mDrawerLayout.closeDrawers();
                 break;
             case 1:
-                Toast.makeText(this, "This is Position 1 in Drawer", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Past runs currently unavailable", Toast.LENGTH_SHORT).show();
                 break;
             case 2:
-                Toast.makeText(this, "This is Position 2 in Drawer", Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Settings");
+                builder.setMessage("Standard or Metric system:");
+
+                builder.setPositiveButton("KM", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //set distance to km
+                        distanceNum = distanceNum / conv;
+                        distance = menu.findItem(R.id.distance);
+                        distance.setTitle(DIST_STR + distanceNum + KM);
+                        metric = true;
+                        mDrawerLayout.closeDrawers();
+                    }
+                });
+
+                builder.setNegativeButton("Miles", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //set distance to km
+                        distanceNum = distanceNum * conv;
+                        distance = menu.findItem(R.id.distance);
+                        metric = false;
+                        if (metric == false)
+                            distance.setTitle(DIST_STR + distanceNum + Miles);
+                        mDrawerLayout.closeDrawers();
+                    }
+                });
+
+                builder.show();
                 break;
             default:
                 Toast.makeText(this, "This is the Default in Drawer", Toast.LENGTH_SHORT).show();
@@ -486,6 +533,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // calculate new distance traveled (currently in meters) every time location is updated and update display
     private void updateDistance(float newDistanceNum) {
         // add existing distance to new distance
+        if(metric == false){
+            newDistanceNum = newDistanceNum * conv;
+        }
+
+        newDistanceNum = newDistanceNum/1000;
         distanceNum += newDistanceNum;
 
         // round distance to one decimal place
@@ -496,6 +548,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // update text with new distance
         distance = menu.findItem(R.id.distance);
-        distance.setTitle(DIST_STR + distanceNum + METERS);
+        if(metric == false)
+            distance.setTitle(DIST_STR + distanceNum + Miles);
+        else
+            distance.setTitle(DIST_STR + distanceNum + KM);
     }
 }

@@ -292,6 +292,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Minutes = 0 ;
         MilliSeconds = 0 ;
 
+        // reset distance and steps when reset is clicked
+        numSteps = 0;
+        distanceNum = 0;
+
+        steps = menu.findItem(R.id.steps);
+        steps.setTitle(STEPS_STR + (int) numSteps);
+
+        distance = menu.findItem(R.id.distance);
+        distance.setTitle(DIST_STR + distanceNum + METERS);
+
+
+
         //counter.setTitle("00:00:00");
         watch.setText("0:00:000");
         ListElementsArrayList.clear();
@@ -385,24 +397,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(newLatLng));
 
+        // check if start was clicked before drawing on map and updating distance
+        if (start == 1) {
+            PolylineOptions line = new PolylineOptions()
+                    .add(oldLatLng, newLatLng)
+                    .width(5).color(Color.RED);
+            mMap.addPolyline(line);
 
-        PolylineOptions line = new PolylineOptions()
-                .add(oldLatLng, newLatLng)
-                .width(5).color(Color.RED);
-        mMap.addPolyline(line);
+            Location oldLocation = new Location("old");
+            Location newLocation = new Location("new");
 
-        Location oldLocation = new Location("old");
-        Location newLocation = new Location("new");
+            oldLocation.setLatitude(oldLatLng.latitude);
+            oldLocation.setLongitude(oldLatLng.longitude);
+            newLocation.setLatitude(newLatLng.latitude);
+            newLocation.setLongitude(newLatLng.longitude);
 
-        oldLocation.setLatitude(oldLatLng.latitude);
-        oldLocation.setLongitude(oldLatLng.longitude);
-        newLocation.setLatitude(newLatLng.latitude);
-        newLocation.setLongitude(newLatLng.longitude);
+            float newDistanceNum = oldLocation.distanceTo(newLocation);
+            //Toast.makeText(this, Float.toString(distanceNum), Toast.LENGTH_SHORT).show();
 
-        float newDistanceNum = oldLocation.distanceTo(newLocation);
-        //Toast.makeText(this, Float.toString(distanceNum), Toast.LENGTH_SHORT).show();
-
-        updateDistance(newDistanceNum);
+            updateDistance(newDistanceNum);
+        }
 
         oldLatLng = newLatLng;
 
@@ -427,14 +441,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         sensorManager.registerListener(new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            //numSteps = event.values[0];
-            numSteps++;
-            //update number of steps
-            if (menu == null) {
-                return;
+            // only update steps if start has been clicked
+            if (start == 1) {
+                numSteps++;
+                //update number of steps
+                if (menu == null) {
+                    return;
+                }
+                steps = menu.findItem(R.id.steps);
+                steps.setTitle(STEPS_STR + (int) numSteps);
             }
-            steps = menu.findItem(R.id.steps);
-            steps.setTitle(STEPS_STR + (int) numSteps);
         }
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {

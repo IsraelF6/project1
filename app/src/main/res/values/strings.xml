@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Map</string>
+    <string name="app_name">Trail Trak</string>
     <string name="title_activity_maps">Map</string>
     <string name="drawer_open">opened</string>
     <string name="drawer_close">closed</string>

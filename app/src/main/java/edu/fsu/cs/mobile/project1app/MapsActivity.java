@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -18,10 +19,12 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -333,8 +336,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         ContentValues mNewValues = new ContentValues();
 
-        mNewValues.put(RunProvider.RUN_STEPS, 500);
-        mNewValues.put(RunProvider.RUN_DISTANCE, 1000);
+        mNewValues.put(RunProvider.RUN_STEPS, numSteps);
+        mNewValues.put(RunProvider.RUN_DISTANCE, distanceNum);
         mNewValues.put(RunProvider.RUN_MINUTES, Minutes);
         mNewValues.put(RunProvider.RUN_SECONDS, Seconds);
         mNewValues.put(RunProvider.RUN_MILISECONDS, MilliSeconds);
@@ -491,7 +494,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mDrawerLayout.closeDrawers();
                 break;
             case 1:
-                Toast.makeText(this, "Past runs currently unavailable", Toast.LENGTH_SHORT).show();
+                Cursor mCursor = getContentResolver().query(RunProvider.CONTENT_URI, null, null, null, null);
+                SimpleCursorAdapter mAdapter;
+                String[] mListColumns;
+
+                AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+
+                alert.setTitle("Past Runs");
+                mListColumns = new String[]{RunProvider.RUN_MINUTES,RunProvider.RUN_SECONDS,RunProvider.RUN_MILISECONDS,RunProvider.RUN_STEPS,RunProvider.RUN_DISTANCE};
+
+                mAdapter = new SimpleCursorAdapter(this,R.layout.list ,mCursor, mListColumns,new int[]{R.id.minute,R.id.second, R.id.milisecond,R.id.steps,R.id.distance},1);
+                alert.setAdapter(mAdapter, null);
+
+                alert.show();
+
+
+                //Toast.makeText(this, "Past runs currently unavailable", Toast.LENGTH_SHORT).show();
                 break;
             case 2:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);

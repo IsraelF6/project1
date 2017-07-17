@@ -14,7 +14,7 @@ import android.util.Log;
 public class RunProvider extends ContentProvider{
     public final static String DBNAME = "pastRuns3";
     public final static String RUN_TABLE = "runs";
-    public final static String RUN_ID = "id";
+    public final static String RUN_ID = "_id";
     public final static String RUN_STEPS = "steps";
     public final static String RUN_DISTANCE = "distance";
     public final static String START_TIME = "startTime";
@@ -31,8 +31,8 @@ public class RunProvider extends ContentProvider{
     private static final String SQL_CREATE = "CREATE TABLE "
             + RUN_TABLE + " ( "
             + RUN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-            + RUN_STEPS + " INTEGER,"
-            + RUN_DISTANCE + " INTEGER,"
+            + RUN_STEPS + " REAL,"
+            + RUN_DISTANCE + " REAL,"
             + RUN_MINUTES + " INTEGER, "
             + RUN_SECONDS + " INTEGER, "
             + RUN_MILISECONDS + " INTEGER )";

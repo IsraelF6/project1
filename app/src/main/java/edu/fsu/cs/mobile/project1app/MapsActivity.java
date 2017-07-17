@@ -245,7 +245,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 double latitude = mLocation.getLatitude();
                 double longitude = mLocation.getLongitude();
                 LatLng latLng = new LatLng(latitude, longitude);
-                mMap.addMarker(new MarkerOptions().position(latLng).title("Start"));
                 StartTime = SystemClock.uptimeMillis();
                 handler.postDelayed(runnable, 0);
                 Reset.setEnabled(false);
@@ -258,6 +257,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Start_Pause.setText("Start");
                 TimeBuff += MillisecondTime;
                 handler.removeCallbacks(runnable);
+                handler.removeCallbacksAndMessages(null);
+                //pauseTimer();
                 Reset.setEnabled(true);
                 Reset.setText("Reset");
                 Lap.setEnabled(true);
@@ -295,6 +296,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //counter.setTitle("00:00:00");
         watch.setText("0:00:000");
         ListElementsArrayList.clear();
+        mMap.clear();
         adapter.notifyDataSetChanged();
     }
 
@@ -332,12 +334,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Enables touch gestures so that they can control the map
         // Useful to enable pinch and zoom in/out as well as one handed zoom in feature
         mMap.getUiSettings().setZoomGesturesEnabled(true);
-
-
-        // Add a marker in Sydney and move the camera
-        //LatLng sydney = new LatLng(-34, 151);
-        //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
         // Check to see if proper permissions are in place to get current location, if they are,
         // enable setMyLocation
@@ -401,7 +397,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             newLocation.setLongitude(newLatLng.longitude);
 
             float newDistanceNum = oldLocation.distanceTo(newLocation);
-            //Toast.makeText(this, Float.toString(distanceNum), Toast.LENGTH_SHORT).show();
 
             updateDistance(newDistanceNum);
         }
@@ -483,9 +478,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     alert.show();
                 }
-
-
-                //Toast.makeText(this, "Past runs currently unavailable", Toast.LENGTH_SHORT).show();
+                    mDrawerLayout.closeDrawers();
                 break;
             case 2:
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -495,11 +488,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 builder.setPositiveButton("KM", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        //set distance to km
-                        distanceNum = distanceNum / conv;
-                        distance = menu.findItem(R.id.distance);
-                        distance.setTitle(DIST_STR + distanceNum + KM);
-                        metric = true;
+                        if (!metric) {
+                            metric = true;
+                            milesToKilometers();
+                            distance = menu.findItem(R.id.distance);
+                            distance.setTitle(DIST_STR + distanceNum + KM);
+                        }
                         mDrawerLayout.closeDrawers();
                     }
                 });
@@ -507,12 +501,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 builder.setNegativeButton("Miles", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        //set distance to km
-                        distanceNum = distanceNum * conv;
-                        distance = menu.findItem(R.id.distance);
-                        metric = false;
-                        if (metric == false)
+                        if (metric) {
+                            metric = false;
+                            kilometersToMiles();
+                            distance = menu.findItem(R.id.distance);
                             distance.setTitle(DIST_STR + distanceNum + Miles);
+                        }
                         mDrawerLayout.closeDrawers();
                     }
                 });
@@ -527,16 +521,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // calculate new distance traveled (currently in meters) every time location is updated and update display
     private void updateDistance(float newDistanceNum) {
         // add existing distance to new distance
-        if(metric == false){
-            newDistanceNum = newDistanceNum * conv;
+        // distance passed in is in meters
+
+        // convert meters to kilometers
+        newDistanceNum = newDistanceNum / 1000;
+
+        // if metric, just add to distance
+        if (metric) {
+            distanceNum += newDistanceNum;
         }
 
-        newDistanceNum = newDistanceNum/1000;
-        distanceNum += newDistanceNum;
+        // convert to miles if not metric then add to distance
+        if (!metric) {
+            newDistanceNum = newDistanceNum * conv;
+            distanceNum += newDistanceNum;
+        }
 
-        // round distance to one decimal place
+
+        // round distance to two decimal places
         BigDecimal bd = new BigDecimal(Float.toString(distanceNum));
-        bd = bd.setScale(1, BigDecimal.ROUND_HALF_UP);
+        bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
 
         distanceNum = bd.floatValue();
 
@@ -547,4 +551,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         else
             distance.setTitle(DIST_STR + distanceNum + KM);
     }
+
+    private void kilometersToMiles() {
+        distanceNum = distanceNum * conv;
+
+        BigDecimal bd = new BigDecimal(Float.toString(distanceNum));
+        bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        distanceNum = bd.floatValue();
+    }
+
+    private void milesToKilometers () {
+        distanceNum = distanceNum / conv;
+
+        BigDecimal bd = new BigDecimal(Float.toString(distanceNum));
+        bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        distanceNum = bd.floatValue();
+    }
 }
+
+
+

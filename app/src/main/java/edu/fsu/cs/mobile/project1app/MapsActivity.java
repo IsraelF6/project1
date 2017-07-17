@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,7 +14,6 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -23,8 +23,6 @@ import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -44,7 +42,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import android.graphics.Color;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -59,7 +56,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static String STEPS_STR = "Steps: ";
     private static String DIST_STR = "Distance: ";
     private static String KM = " km";
-    private static String Miles = " miles";
+    private static String Miles = " mi";
     private static float conv = (float) 0.621371;
     private static boolean metric = true;
     float numSteps = 0;
@@ -68,16 +65,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     LocationManager locationManager;
     Location mLocation;
-    //90 second timer:
-    long timer = 90000;
+
     Button Start_Pause, Reset, Lap, Show_Hide;
     long MillisecondTime, StartTime, TimeBuff, UpdateTime = 0L ;
     Handler handler;
     int Seconds, Minutes, MilliSeconds, start=0, show=1;
     Runnable runnable;
-    MenuItem  counter, distance, steps;
+    MenuItem  distance, steps;
     private Menu menu;
-    TextView watch;
+    TextView watch, d_unit;
     ListView listView, mDrawerList;
     DrawerLayout mDrawerLayout;
     String[] ListElements = new String[] {  };
@@ -91,8 +87,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     ZoomControls zoomControls;
 
-    private boolean mLocationPermissionGranted = false;
-    public static int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,29 +195,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         setupRegisterListener();
 
-        //counter = menu.findItem(R.id.counter);
-        //counter.setTitle("00:00:00");
-
-        /*new CountDownTimer(timer, 1000) {
-
-            public void onTick(long millisUntilFinished) {
-                long millis = millisUntilFinished;
-                String  hms =  (TimeUnit.MILLISECONDS.toHours(millis))+":"+
-                        (TimeUnit.MILLISECONDS.toMinutes(millis) -
-                                TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)))+":"+
-                        (TimeUnit.MILLISECONDS.toSeconds(millis) -
-                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
-
-                counter.setTitle("Time left: " + hms);
-                timer = millis;
-
-            }
-
-            public void onFinish() {
-                counter.setTitle("done!");
-            }
-        }.start();*/
-
         runnable = new Runnable() {
 
             public void run() {
@@ -239,10 +210,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Seconds = Seconds % 60;
 
                 MilliSeconds = (int) (UpdateTime % 1000);
-
-               /* counter.setTitle("" + Minutes + ":"
-                        + String.format("%02d", Seconds) + ":"
-                        + String.format("%03d", MilliSeconds));*/
 
                 watch.setText("" + Minutes + ":"
                         + String.format("%02d", Seconds) + ":"
@@ -499,15 +466,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String[] mListColumns;
 
                 AlertDialog.Builder alert = new AlertDialog.Builder(this);
-
-
                 alert.setTitle("Past Runs");
-                mListColumns = new String[]{RunProvider.RUN_MINUTES,RunProvider.RUN_SECONDS,RunProvider.RUN_MILISECONDS,RunProvider.RUN_STEPS,RunProvider.RUN_DISTANCE};
 
-                mAdapter = new SimpleCursorAdapter(this,R.layout.list ,mCursor, mListColumns,new int[]{R.id.minute,R.id.second, R.id.milisecond,R.id.steps,R.id.distance},1);
-                alert.setAdapter(mAdapter, null);
+                if(metric == true) {
+                    mListColumns = new String[]{RunProvider.RUN_MINUTES, RunProvider.RUN_SECONDS, RunProvider.RUN_MILISECONDS, RunProvider.RUN_STEPS, RunProvider.RUN_DISTANCE};
 
-                alert.show();
+                    mAdapter = new SimpleCursorAdapter(this, R.layout.list_km, mCursor, mListColumns, new int[]{R.id.minute, R.id.second, R.id.milisecond, R.id.steps, R.id.distance}, 1);
+                    alert.setAdapter(mAdapter, null);
+
+                    alert.show();
+                }else if(metric == false){
+                    mListColumns = new String[]{RunProvider.RUN_MINUTES, RunProvider.RUN_SECONDS, RunProvider.RUN_MILISECONDS, RunProvider.RUN_STEPS, RunProvider.RUN_DISTANCE};
+
+                    mAdapter = new SimpleCursorAdapter(this, R.layout.list_mi, mCursor, mListColumns, new int[]{R.id.minute, R.id.second, R.id.milisecond, R.id.steps, R.id.distance}, 1);
+                    alert.setAdapter(mAdapter, null);
+
+                    alert.show();
+                }
 
 
                 //Toast.makeText(this, "Past runs currently unavailable", Toast.LENGTH_SHORT).show();

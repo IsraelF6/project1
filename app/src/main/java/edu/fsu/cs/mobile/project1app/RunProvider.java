@@ -89,14 +89,14 @@ public class RunProvider extends ContentProvider{
         }
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL("DROP TABLE IF EXISTS " + RUN_TABLE);
+            //db.execSQL("DROP TABLE IF EXISTS " + RUN_TABLE);
             db.execSQL(SQL_CREATE);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             db.execSQL("DROP TABLE IF EXISTS " + RUN_TABLE);
-
+            db.execSQL(SQL_CREATE);
         }
     }
 
